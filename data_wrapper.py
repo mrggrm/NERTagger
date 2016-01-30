@@ -35,7 +35,7 @@ class WrapperTools:
             removes newline and splits the word from the tag
         """
         word = re.sub(r'\n', '', word)
-        word = tuple(word.split("\t"))
+        word = word.split("\t")
         return word
 
     def split_tweets(self, all_lines):
