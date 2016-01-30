@@ -60,9 +60,3 @@ class WrapperTools:
         the_file = open(filepath)
         all_lines = the_file.readlines()
         return all_lines
-
-
-# testing area
-
-wt = WrapperTools()
-wt.unwrap("proj1-data//train.gold")
