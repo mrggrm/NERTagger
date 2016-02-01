@@ -36,11 +36,39 @@ class NER_Tagger:
 		# of the list, it should be easy to write to the file and keep all features separate
 		# Inefficient, but easier to keep straight when all of us 
 		# work on separate features
+
+		#names_dict is only retrieved once to increase efficiency
+		names_dict = self.read_names("census_first_names", {})
+		names_dict = self.read_names("census_last_names", names_dict)
+
 		for tweet in tweets:
 			for word in tweet:
+
+				### FEATURE FUNCTIONS ###
+
+				# word is a name
+				word.append(self.features_is_a_name(word[0]), names_dict)
+
+
+				### END FEATURE FUNCTIONS ###
+
 				fw.write(w)
 		fw.close()
 		return
 
 
+	def feature_is_a_name(self, word, names_dict):
+		return word.lower() in names_dict
 
+
+	def read_names(self, filename, names_dict):
+		""" 
+			Retrieves names fron census bureau files
+		"""
+		the_file = open(filepath)
+		all_lines = the_file.readlines()
+        # line.split()[0] is the name itself
+        # hashing allows of O(1) checks. The 1 is meaningless
+		for line in all_lines:
+			names_dict[line.split()[0].lower()] = 1
+		return names_dict

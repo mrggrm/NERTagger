@@ -10,7 +10,7 @@ class WrapperTools:
         """
             Use this method to get data from files
             returns it in the form:
-                [ [(word, tag)...(word, tag)], [(word, tag)...(word, tag)], ...]
+                [ [[word, tag]...[word, tag]], [[word, tag]...[word, tag]], ...]
         """
         all_lines = self.get_file_lines(filepath)
         split_tweets = self.split_tweets(all_lines)
