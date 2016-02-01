@@ -20,14 +20,44 @@ class NER_Tagger:
 		"""Tests the trained tagger using Mallet"""
 		wt = WrapperTools()
  		words = wt.unwrap(test_file)
- 		self.featurize(words,"featurized_test")
+ 		self.featurize(words,"featurized_test",False)
  		os.system("java -cp " +\
  			"\"../mallet-2.0.8RC3/class:../mallet-2.0.8RC3/lib/mallet-deps.jar\" " +\
  			"cc.mallet.fst.SimpleTagger " +\
- 			"--model-file featurized_training featurized_test" )
+ 			"--model-file trained_model featurized_test > tagged_test" )
+ 		print self.get_precision_and_recall(words,"tagged_test")
 
 
-	def featurize(self,tweets,output="featurized"):
+ 	def get_precision_and_recall(self,tweets,test):
+ 		"""Compares the gold standard with the tagged file
+ 		returns precision, recall"""
+ 		tp = 0
+ 		fp = 0
+ 		tn = 0
+ 		fn = 0
+ 		total = 0
+ 		t = open(test)
+ 		g = [word for words in tweets for word in words]
+ 		for line in t:
+ 			new = line.strip()
+ 			if len(new) == 0:
+ 				continue
+ 			gold = g[total][-1]
+ 			if gold == "O":
+ 				if new == "O":
+ 					tn += 1
+ 				else:
+ 					fp += 1
+ 			else:
+ 				if new == gold:
+ 					tp += 1
+ 				else:
+ 					fn += 1
+ 			total += 1
+ 		return float(tp)/float(tp+fp),float(tp)/float(tp+fn)
+
+
+	def featurize(self,tweets,output="featurized",label=True):
 		"""Takes the output of WrapperTools and creates a document
 		in the necessary format for Mallet, i.e. 
 		f1 f2 ... fn label"""
@@ -41,8 +71,9 @@ class NER_Tagger:
 		tweets = is_word_shape_like_ne(tweets)
 		for tweet in tweets:
 			for word in tweet:
-				for f in word:
-					fw.write(str(f)+" ")
+				for i in range(len(word)):
+					if i < len(word)-1 or label:
+						fw.write(str(word[i])+" ")
 				fw.write("\n")
 		fw.close()
 		return
@@ -87,13 +118,15 @@ def load_set_from_file(filename):
 	for line in f:
 		newset.add(line.strip().lower())
 	return newset
+
+
 			
 
 if __name__ == "__main__":
 	wt = WrapperTools()
  	words = wt.unwrap("./proj1-data/train.gold")
  	NT = NER_Tagger()
- 	NT.train("./proj1-data/train.gold")
+ 	#NT.train("./proj1-data/train.gold")
  	NT.test("./proj1-data/dev.gold")
 
 
