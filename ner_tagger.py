@@ -75,7 +75,7 @@ class NER_Tagger:
 		tweets = starts_with_punctuation(tweets)
 		tweets = is_word_shape_like_ne(tweets)
 		tweets = self.is_a_name(tweets, names_dict)
-		tweets = whole_tweet_is_upper_lower(tweets)
+		tweets = self.whole_tweet_is_upper_lower(tweets)
 
 
 		for tweet in tweets:
@@ -113,6 +113,7 @@ class NER_Tagger:
 		"""
 		for tweet in tweets:
 			boolean = self.individual_tweet_is_upper_lower(tweet)
+			# apply feature to each word in tweet
 			for word in tweet:
 				word.insert(0, boolean)
 		return tweets
