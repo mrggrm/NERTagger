@@ -166,7 +166,140 @@ def load_set_from_file(filename):
 	return newset
 
 
-			
+def brown2bits(bits):
+	"""function credit: Twitter NLP
+	converts brown number to bitstring"""
+	bitstring = ""
+	for i in range(20):
+	    if int(bits) & (1 << i):
+	        bitstring += '1'
+	    else:
+	        bitstring += '0'
+	return str(bitstring)
+
+def read_clusters():
+	clusterdict = {}
+	with open('twitter_nlp/data/brown_clusters/60K_clusters.txt') as clusterfile:
+		for line in clusterfile.readlines():
+			lineList = line.split()
+			clusterdict[lineList[0]] = brown2bits(lineList[1])
+	return clusterdict
+
+def read_dictionary(fpath):
+	with open(fpath) as dictfile:
+		dictlist = [line.lower() for line in dictfile.readlines()]
+	return set(dictlist)
+
+def cluster_features(tweets):
+	"""get brown cluster prefixes for the corpus"""
+	clusterdict = read_clusters()
+	for tweet in tweets:
+		for word in tweet:
+			token = word[-2].lower()
+			if token in clusterdict:
+				cluster = clusterdict[token.lower()]
+				word.insert(0, 'cluster'+cluster[:4])
+				word.insert(0, 'cluster'+cluster[:8])
+				word.insert(0, 'cluster'+cluster[:12])
+	return tweets
+
+def dictionary_features(tweets):
+	dict_main_path = 'twitter_nlp/data/dictionaries/'
+	auto_make = read_dictionary(dict_main_path+'automotive.make')
+	auto_model = read_dictionary(dict_main_path+'automotive.model')
+	events = read_dictionary(dict_main_path+'base.events.festival_series')
+	book_paper = read_dictionary(dict_main_path+'book.newspaper')
+	channel = read_dictionary(dict_main_path+'broadcast.tv_channel')
+	brand = read_dictionary(dict_main_path+'business.brand')
+	company = read_dictionary(dict_main_path+'business.consumer_company')
+	consumer_product = read_dictionary(dict_main_path+'business.consumer_company')
+	sponsor = read_dictionary(dict_main_path+'business.sponsor')
+	uni = read_dictionary(dict_main_path+'education.university')
+	stop = read_dictionary(dict_main_path+'english.stop')
+	gov = read_dictionary(dict_main_path+'government.government_agency')
+	loc = read_dictionary(dict_main_path+'location')
+	website = read_dictionary(dict_main_path+'internet.website')
+	country = read_dictionary(dict_main_path+'location.country')
+	product = read_dictionary(dict_main_path+'product')
+	league = read_dictionary(dict_main_path+'sports.sports_league')
+	team = read_dictionary(dict_main_path+'sports.sports_team')
+	holiday = read_dictionary(dict_main_path+'time.holiday')
+	recurring_event = read_dictionary(dict_main_path+'time.recurring_event')
+	road = read_dictionary(dict_main_path+'transportation.road')
+	network = read_dictionary(dict_main_path+'tv.tv_network')
+	program = read_dictionary(dict_main_path+'tv.tv_program')
+	vc_comp = read_dictionary(dict_main_path+'venture_capital.venture_funded_company')
+	venue = read_dictionary(dict_main_path+'venues')
+	lower100 = read_dictionary(dict_main_path+'lower.100')
+	lower500 = read_dictionary(dict_main_path+'lower.500')
+	lower1000 = read_dictionary(dict_main_path+'lower.1000')
+	lower5000 = read_dictionary(dict_main_path+'lower.5000')
+	lower10000 = read_dictionary(dict_main_path+'lower.10000')
+
+	for tweet in tweets:
+		for word in tweet:
+			token = word[-2].lower()
+			if token in auto_make:
+				word.insert(0, 'auto_make')
+			if token in auto_model:
+				word.insert(0, 'auto_model')
+			if token in events:
+				word.insert(0, 'events')
+			if token in book_paper:
+				word.insert(0, 'book_paper')
+			if token in channel:
+				word.insert(0, 'channel')
+			if token in brand:
+				word.insert(0, 'brand')
+			if token in company:
+				word.insert(0, 'company')
+			if token in consumer_product:
+				word.insert(0, 'consumer_product')
+			if token in sponsor:
+				word.insert(0, 'sponsor')
+			if token in uni:
+				word.insert(0, 'uni')
+			if token in stop:
+				word.insert(0, 'stop')
+			if token in gov:
+				word.insert(0, 'gov')
+			if token in loc:
+				word.insert(0, 'loc')
+			if token in website:
+				word.insert(0, 'website')
+			if token in country:
+				word.insert(0, 'country')
+			if token in product:
+				word.insert(0, 'product')
+			if token in league:
+				word.insert(0, 'league')
+			if token in team:
+				word.insert(0, 'team')
+			if token in holiday:
+				word.insert(0, 'holiday')
+			if token in recurring_event:
+				word.insert(0, 'recurring_event')
+			if token in road:
+				word.insert(0, 'road')
+			if token in network:
+				word.insert(0, 'network')
+			if token in program:
+				word.insert(0, 'program')
+			if token in vc_comp:
+				word.insert(0, 'vc_comp')
+			if token in venue:
+				word.insert(0, 'venue')
+			if token in lower100:
+				word.insert(0, 'lower100')
+			if token in lower500:
+				word.insert(0, 'lower500')
+			if token in lower1000:
+				word.insert(0, 'lower1000')
+			if token in lower5000:
+				word.insert(0, 'lower5000')
+			if token in lower10000:
+				word.insert(0, 'lower10000')
+	return tweets			
 
 if __name__ == "__main__":
 	wt = WrapperTools()
