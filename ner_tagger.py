@@ -68,8 +68,8 @@ class NER_Tagger:
 		"""
 		the_file = open(filename)
 		all_lines = the_file.readlines()
-        # line.split()[0] is the name itself
-        # hashing allows of O(1) checks. The 1 is meaningless
+		# line.split()[0] is the name itself
+		# hashing allows of O(1) checks. The 1 is meaningless
 		for line in all_lines:
 			names_dict[line.split()[0].lower()] = 1
 		return names_dict
