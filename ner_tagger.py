@@ -75,6 +75,7 @@ class NER_Tagger:
 		tweets = starts_with_punctuation(tweets)
 		tweets = is_word_shape_like_ne(tweets)
 		tweets = self.is_a_name(tweets, names_dict)
+		tweets = self.whole_tweet_is_upper_lower(tweets)
 
 
 		for tweet in tweets:
@@ -107,6 +108,25 @@ class NER_Tagger:
 		return names_dict
 
 
+	def whole_tweet_is_upper_lower(self, tweets):
+		"""
+			Checks to see if the whole tweet is in one case
+		"""
+		for tweet in tweets:
+			boolean = self.individual_tweet_is_upper_lower(tweet)
+			# apply feature to each word in tweet
+			for word in tweet:
+				word.insert(0, "is_one_case")
+		return tweets
+
+
+	def individual_tweet_is_upper_lower(self, tweet):
+		"""
+			Helper method for whole_tweet_is_upper_lower
+		"""
+		lower = [1 for word in tweet if word[-2].islower()]
+		upper = [1 for word in tweet if word[-2].isupper()]
+		return len(upper) == len(tweet) or len(lower) == len(tweet)
 
 def starts_with_punctuation(tweets):
 	for tweet in tweets:
