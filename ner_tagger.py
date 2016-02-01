@@ -88,7 +88,7 @@ class NER_Tagger:
 
 	def is_a_name(self, tweets, names_dict):
 		for tweet in tweets:
-			for word in tweets:
+			for word in tweet:
 				word.insert(0, word[-2].lower() in names_dict)
 		return tweets
 
