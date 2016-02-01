@@ -116,7 +116,8 @@ class NER_Tagger:
 			boolean = self.individual_tweet_is_upper_lower(tweet)
 			# apply feature to each word in tweet
 			for word in tweet:
-				word.insert(0, "is_one_case")
+				if boolean:
+					word.insert(0, "is_one_case")
 		return tweets
 
 
