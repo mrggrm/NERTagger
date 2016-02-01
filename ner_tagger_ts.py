@@ -77,7 +77,7 @@ class NER_Tagger:
 		tweets = self.is_a_name(tweets, names_dict)
 		tweets = self.whole_tweet_is_upper_lower(tweets)
 		tweets = cluster_features(tweets)
-		#tweets = dictionary_features(tweets)
+		tweets = dictionary_features(tweets)
 
 
 		for tweet in tweets:
