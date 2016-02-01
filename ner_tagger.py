@@ -89,7 +89,8 @@ class NER_Tagger:
 	def is_a_name(self, tweets, names_dict):
 		for tweet in tweets:
 			for word in tweet:
-				word.insert(0, word[-2].lower() in names_dict)
+				if word[-2].lower() in names_dict:
+					word.insert(0, "is_name")
 		return tweets
 
 
@@ -113,11 +114,9 @@ def starts_with_punctuation(tweets):
 		for entry in tweet:
 			word = entry[-2]
 			if word.startswith("@") or word.startswith("#") or len(word) < 2:
-				entry.insert(0,False)
+				entry.insert(0,"starts_with_punc")
 			elif word.find("http") > -1 or re.search(r"\.[a-z]{3}",word):
-				entry.insert(0,False)
-			else:
-				entry.insert(0,True)
+				entry.insert(0,"starts_with_punc")
 			i+=1
 	return tweets
 
@@ -133,11 +132,9 @@ def is_word_shape_like_ne(tweets):
 		for entry in tweet:
 			word = entry[-2]
 			if word.lower() in caps_non_entities:
-				entry.insert(0,False)
+				pass
 			elif re.match(capsword,word) and i != 0 and not re.match(punc,tweet[i-1][-2]):
-					entry.insert(0,True)
-			else:
-				entry.insert(0,False)
+					entry.insert(0,"is_caps")
 			i+=1
 	return tweets
 
@@ -155,5 +152,5 @@ if __name__ == "__main__":
 	wt = WrapperTools()
  	words = wt.unwrap("./proj1-data/train.gold")
  	NT = NER_Tagger()
- 	#NT.train("./proj1-data/train.gold")
+ 	NT.train("./proj1-data/train.gold")
  	NT.test("./proj1-data/dev.gold")
