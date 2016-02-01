@@ -124,7 +124,7 @@ class NER_Tagger:
 			Helper method for whole_tweet_is_upper_lower
 		"""
 		lower = [1 for word in tweet if word[-2].islower()]
-		upper = [1 for word in tweet if word[-2] isupper()]
+		upper = [1 for word in tweet if word[-2].isupper()]
 		return len(upper) == len(tweet) or len(lower) == len(tweet)
 
 def starts_with_punctuation(tweets):
