@@ -67,8 +67,16 @@ class NER_Tagger:
 		# of the list, it should be easy to write to the file and keep all features separate
 		# Inefficient, but easier to keep straight when all of us 
 		# work on separate features
+
+		#names_dict is only retrieved once to increase efficiency
+		names_dict = self.read_names("census_first_names", {})
+		names_dict = self.read_names("census_last_names", names_dict)
+
 		tweets = starts_with_punctuation(tweets)
 		tweets = is_word_shape_like_ne(tweets)
+		tweets = self.is_a_name(tweets, names_dict)
+
+
 		for tweet in tweets:
 			for word in tweet:
 				for i in range(len(word)):
@@ -77,6 +85,27 @@ class NER_Tagger:
 				fw.write("\n")
 		fw.close()
 		return
+
+	def is_a_name(self, tweets, names_dict):
+		for tweet in tweets:
+			for word in tweets:
+				word.insert(0, word[-2].lower() in names_dict)
+		return tweets
+
+
+	def read_names(self, filename, names_dict):
+		""" 
+			Retrieves names fron census bureau files
+		"""
+		the_file = open(filename)
+		all_lines = the_file.readlines()
+		# line.split()[0] is the name itself
+		# hashing allows of O(1) checks. The 1 is meaningless
+		for line in all_lines:
+			names_dict[line.split()[0].lower()] = 1
+		return names_dict
+
+
 
 def starts_with_punctuation(tweets):
 	for tweet in tweets:
@@ -128,8 +157,3 @@ if __name__ == "__main__":
  	NT = NER_Tagger()
  	#NT.train("./proj1-data/train.gold")
  	NT.test("./proj1-data/dev.gold")
-
-
-
-
-
