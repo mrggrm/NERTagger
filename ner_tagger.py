@@ -92,6 +92,8 @@ class NER_Tagger:
 			for word in tweet:
 				if word[-2].lower() in names_dict:
 					word.insert(0, "is_name")
+				else:
+					word.insert(0, "is_not_a_name")
 		return tweets
 
 
@@ -118,6 +120,8 @@ class NER_Tagger:
 			for word in tweet:
 				if boolean:
 					word.insert(0, "is_one_case")
+				else:
+					word.insert(0, "is_not_one_case")
 		return tweets
 
 
