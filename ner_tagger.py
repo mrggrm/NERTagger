@@ -80,8 +80,10 @@ class NER_Tagger:
 		tweets = self.is_a_name(tweets, names_dict)
 		tweets = self.whole_tweet_is_upper_lower(tweets)
 		tweets = self.word_begins_with_capital(tweets)
-		#tweets = self.prev_next_BIO_tag(tweets)
-
+		# tweets = self.prev_next_BIO_tag(tweets)
+		tweets = cluster_features(tweets)
+		tweets = dictionary_features(tweets)
+		tweets = token_context(tweets)
 
 		for tweet in tweets:
 			for word in tweet:
@@ -255,14 +257,26 @@ def cluster_features(tweets):
 	"""get brown cluster prefixes for the corpus"""
 	clusterdict = read_clusters()
 	for tweet in tweets:
-		for word in tweet:
-			token = word[-2].lower()
+		for i in range(len(tweet)):
+			token = tweet[i][-2].lower()
 			if token in clusterdict:
-				cluster = clusterdict[token.lower()]
-				word.insert(0, 'cluster'+cluster[:4])
-				word.insert(0, 'cluster'+cluster[:8])
-				word.insert(0, 'cluster'+cluster[:12])
-	return tweets
+				cluster = clusterdict[token]
+				tweet[i].insert(0, 'cluster'+cluster[:4])
+				# tweet[i].insert(0, 'cluster'+cluster[:8])
+				# tweet[i].insert(0, 'cluster'+cluster[:12])
+				#word.insert(0, 'cluster'+cluster[:4])
+				#word.insert(0, 'cluster'+cluster[:8])
+				#word.insert(0, 'cluster'+cluster[:12])
+				if i != 0:
+					prevtoken = tweet[i-1][-2].lower()
+					if prevtoken in clusterdict:
+						prevcluster = clusterdict[prevtoken]
+						tweet[i].insert(0, 'prevcluster'+prevcluster[:4])
+				if i != (len(tweet)-1):
+					nexttoken = tweet[i+1][-2].lower()
+					if nexttoken in clusterdict:
+						nextcluster = clusterdict[nexttoken]
+						tweet[i].insert(0, 'nextcluster'+nextcluster[:4])
 
 def dictionary_features(tweets):
 	dict_main_path = 'twitter_nlp/data/dictionaries/'
@@ -360,6 +374,25 @@ def dictionary_features(tweets):
 				word.insert(0, 'lower5000')
 			if token in lower10000:
 				word.insert(0, 'lower10000')
+	return tweets
+
+def token_context(tweets):
+	"""get two previous and two next tokens"""
+	for tweet in tweets:
+		for i in range(len(tweet)):
+			if i != 0:
+				prev_token = tweet[i-1][-2]
+				tweet[i].insert(0, 'prev_token:'+prev_token)
+			if i != (len(tweet)-1):
+				next_token = tweet[i+1][-2]
+				tweet[i].insert(0, 'next_token:'+next_token)
+			if i > 1:
+				prevprev_token = tweet[i-2][-2]
+				tweet[i].insert(0, 'prevprev_token:'+prevprev_token)
+			if i < (len(tweet)-2):
+				nextnext_token = tweet[i+2][-2]
+				tweet[i].insert(0, 'nextnext_token:'+nextnext_token)
+			#tweet[i].insert(0, 'token:'+tweet[i][-2])
 	return tweets			
 
 if __name__ == "__main__":
