@@ -233,14 +233,26 @@ def cluster_features(tweets):
 	"""get brown cluster prefixes for the corpus"""
 	clusterdict = read_clusters()
 	for tweet in tweets:
-		for word in tweet:
-			token = word[-2].lower()
+		for i in range(len(tweet)):
+			token = tweet[i][-2].lower()
 			if token in clusterdict:
-				cluster = clusterdict[token.lower()]
-				word.insert(0, 'cluster'+cluster[:4])
-				word.insert(0, 'cluster'+cluster[:8])
-				word.insert(0, 'cluster'+cluster[:12])
-	return tweets
+				cluster = clusterdict[token]
+				tweet[i].insert(0, 'cluster'+cluster[:4])
+				# tweet[i].insert(0, 'cluster'+cluster[:8])
+				# tweet[i].insert(0, 'cluster'+cluster[:12])
+				#word.insert(0, 'cluster'+cluster[:4])
+				#word.insert(0, 'cluster'+cluster[:8])
+				#word.insert(0, 'cluster'+cluster[:12])
+				if i != 0:
+					prevtoken = tweet[i-1][-2].lower()
+					if prevtoken in clusterdict:
+						prevcluster = clusterdict[prevtoken]
+						tweet[i].insert(0, 'prevcluster'+prevcluster[:4])
+				if i != (len(tweet)-1):
+					nexttoken = tweet[i+1][-2].lower()
+					if nexttoken in clusterdict:
+						nextcluster = clusterdict[nexttoken]
+						tweet[i].insert(0, 'nextcluster'+nextcluster[:4])
 
 def dictionary_features(tweets):
 	dict_main_path = 'twitter_nlp/data/dictionaries/'
