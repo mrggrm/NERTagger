@@ -1,6 +1,8 @@
 import os
 import re
 from data_wrapper import WrapperTools
+import editdistance
+from nltk.corpus import words as lexicon
 
 class NER_Tagger:
 	"""A simple NER tagger"""
@@ -54,6 +56,7 @@ class NER_Tagger:
  				else:
  					fn += 1
  			total += 1
+ 		print tp, tn, fp, fn, total
  		return float(tp)/float(tp+fp),float(tp)/float(tp+fn)
 
 
@@ -77,7 +80,7 @@ class NER_Tagger:
 		tweets = self.is_a_name(tweets, names_dict)
 		tweets = self.whole_tweet_is_upper_lower(tweets)
 		tweets = self.word_begins_with_capital(tweets)
-		tweets = self.prev_next_BIO_tag(tweets)
+		#tweets = self.prev_next_BIO_tag(tweets)
 
 
 		for tweet in tweets:
@@ -194,6 +197,27 @@ def is_word_shape_like_ne(tweets):
 					entry.insert(0,"is_caps")
 			i+=1
 	return tweets
+
+def is_word_misspelled(tweets):
+	"""Adds a feature for whether the word is likely to be a word that 
+	is commonly misspelled, so that we can differentiate words not in the dictionary
+	that might be proper nouns from misspellings"""
+	common_misspellings = load_set_from_file("common_spelling_errors.txt")
+	for tweet in tweets:
+		i = 0
+		for entry in tweet:
+			word = entry[-2].lower()
+			if word not in lexicon.words():
+				for cm in common_misspellings:
+					if editdistance.eval(word,cm) < 3: 
+						entry.insert(0,"is_misspelling")
+					else:
+						entry.insert(0,"misspelling_or_proper")
+			else:
+				entry.insert(0,"in_dictionary")
+			i+=1
+	return tweets
+
 
 def load_set_from_file(filename):
 	newset = set()
