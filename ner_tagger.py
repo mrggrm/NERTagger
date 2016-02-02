@@ -204,7 +204,7 @@ def read_clusters():
 
 def read_dictionary(fpath):
 	with open(fpath) as dictfile:
-		dictlist = [line.lower() for line in dictfile.readlines()]
+		dictlist = [line.lower().strip() for line in dictfile.readlines()]
 	return set(dictlist)
 
 def cluster_features(tweets):
