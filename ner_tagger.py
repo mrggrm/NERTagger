@@ -77,6 +77,7 @@ class NER_Tagger:
 		tweets = self.is_a_name(tweets, names_dict)
 		tweets = self.whole_tweet_is_upper_lower(tweets)
 		tweets = self.word_begins_with_capital(tweets)
+		tweets = token_context(tweets)
 
 
 		for tweet in tweets:
@@ -316,6 +317,25 @@ def dictionary_features(tweets):
 				word.insert(0, 'lower5000')
 			if token in lower10000:
 				word.insert(0, 'lower10000')
+	return tweets
+
+def token_context(tweets):
+	"""get two previous and two next tokens"""
+	for tweet in tweets:
+		for i in range(len(tweet)):
+			if i != 0:
+				prev_token = tweet[i-1][-2]
+				tweet[i].insert(0, 'prev_token:'+prev_token)
+			if i != (len(tweet)-1):
+				next_token = tweet[i+1][-2]
+				tweet[i].insert(0, 'next_token:'+next_token)
+			if i > 1:
+				prevprev_token = tweet[i-2][-2]
+				tweet[i].insert(0, 'prevprev_token:'+prevprev_token)
+			if i < (len(tweet)-2):
+				nextnext_token = tweet[i+2][-2]
+				tweet[i].insert(0, 'nextnext_token:'+nextnext_token)
+			#tweet[i].insert(0, 'token:'+tweet[i][-2])
 	return tweets			
 
 if __name__ == "__main__":
