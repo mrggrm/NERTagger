@@ -76,6 +76,7 @@ class NER_Tagger:
 		tweets = is_word_shape_like_ne(tweets)
 		tweets = self.is_a_name(tweets, names_dict)
 		tweets = self.whole_tweet_is_upper_lower(tweets)
+		tweets = self.word_begins_with_capital(tweets)
 
 
 		for tweet in tweets:
@@ -132,6 +133,17 @@ class NER_Tagger:
 		lower = [1 for word in tweet if word[-2].islower()]
 		upper = [1 for word in tweet if word[-2].isupper()]
 		return len(upper) == len(tweet) or len(lower) == len(tweet)
+
+
+	def word_begins_with_capital(self, tweets):
+		for tweet in tweets:
+			for word in tweet:
+				if word[-2][0].isupper():
+					word.insert(0, "begins_with_capital")
+				else:
+					word.insert(0, "doesnt_begin_with_capital")
+		return tweets
+
 
 def starts_with_punctuation(tweets):
 	for tweet in tweets:
