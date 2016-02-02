@@ -77,6 +77,7 @@ class NER_Tagger:
 		tweets = self.is_a_name(tweets, names_dict)
 		tweets = self.whole_tweet_is_upper_lower(tweets)
 		tweets = self.word_begins_with_capital(tweets)
+		tweets = self.prev_next_BIO_tag(tweets)
 
 
 		for tweet in tweets:
@@ -89,6 +90,9 @@ class NER_Tagger:
 		return
 
 	def is_a_name(self, tweets, names_dict):
+		"""
+			Checks for names in the tweets
+		"""
 		for tweet in tweets:
 			for word in tweet:
 				if word[-2].lower() in names_dict:
@@ -136,12 +140,28 @@ class NER_Tagger:
 
 
 	def word_begins_with_capital(self, tweets):
+		"""
+			Checks if word begins with a capital letter
+		"""
 		for tweet in tweets:
 			for word in tweet:
 				if word[-2][0].isupper():
 					word.insert(0, "begins_with_capital")
 				else:
 					word.insert(0, "doesnt_begin_with_capital")
+		return tweets
+
+
+	def prev_next_BIO_tag(self, tweets):
+		"""
+			Checks the BIO tag of the previous and next words
+		"""
+		for tweet in tweets:
+			for word_index, word in enumerate(tweet):
+				if word_index != 0:
+					word.insert(0, "prev_tag_"+str(tweet[word_index-1][-1]))
+				if word_index != len(tweet)-1:
+					word.insert(0, "next_tag_"+str(tweet[word_index+1][-1]))
 		return tweets
 
 
