@@ -77,7 +77,7 @@ class NER_Tagger:
 		tweets = self.is_a_name(tweets, names_dict)
 		tweets = self.whole_tweet_is_upper_lower(tweets)
 		tweets = self.word_begins_with_capital(tweets)
-		tweets = self.prev_next_BIO_tag(tweets)
+		# tweets = self.prev_next_BIO_tag(tweets)
 		tweets = cluster_features(tweets)
 		tweets = dictionary_features(tweets)
 		tweets = token_context(tweets)
