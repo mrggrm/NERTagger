@@ -27,8 +27,34 @@ class NER_Tagger:
  			"\"../mallet-2.0.8RC3/class:../mallet-2.0.8RC3/lib/mallet-deps.jar\" " +\
  			"cc.mallet.fst.SimpleTagger " +\
  			"--model-file trained_model featurized_test > tagged_test" )
- 		print self.get_precision_and_recall(words,"tagged_test")
+ 		self.post_process("tagged_test", words)
+ 		print self.get_precision_and_recall(words,"tagged_test_postprocessed")
+ 		#print self.get_precision_and_recall(words,"tagged_test")
 
+
+ 	def post_process(self, tags_file, test_tweets):
+ 		with open(tags_file) as tagfile:
+ 			tags = [line.strip() for line in tagfile.readlines()]
+ 		
+ 		test_words = []
+ 		for tweet in test_tweets:
+ 			for entry in tweet:
+ 				test_words.append(entry[-2])
+
+ 		new_tags = []
+ 		for i in range(len(test_words)):
+ 			if test_words[i].startswith('#') or test_words[i].startswith('@') or test_words[i].startswith('http') and tags[i] != 'O':
+ 				new_tags.append('O')
+ 			else:
+ 				new_tags.append(tags[i])
+ 		# new_tags = [tags[0]]
+ 		# for i in range(1,len(tags)):
+ 		# 	if tags[i-1] == 'O' and tags[i] == 'I':
+ 		# 		new_tags.append('B')
+ 		# 	else:
+ 		# 		new_tags.append(tags[i])
+ 		with open("tagged_test_postprocessed", 'w') as newtagfile:
+ 			newtagfile.write('\n'.join(new_tags))
 
  	def get_precision_and_recall(self,tweets,test):
  		"""Compares the gold standard with the tagged file
