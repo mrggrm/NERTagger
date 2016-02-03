@@ -28,7 +28,7 @@ class NER_Tagger:
  			"cc.mallet.fst.SimpleTagger " +\
  			"--model-file trained_model featurized_test > tagged_test" )
  		self.post_process("tagged_test", words)
- 		print self.get_precision_and_recall(words,"tagged_test_postprocessed")
+ 		#print self.get_precision_and_recall(words,"tagged_test_postprocessed")
  		#print self.get_precision_and_recall(words,"tagged_test")
 
 
