@@ -113,7 +113,7 @@ class NER_Tagger:
 		tweets = cluster_features(tweets)
 		tweets = dictionary_features(tweets)
 		tweets = token_context(tweets)
-		tweets = pos_tags(tweets)
+		tweets = pos_tag(tweets)
 
 		for tweet in tweets:
 			for word in tweet:
