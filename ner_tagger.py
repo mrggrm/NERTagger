@@ -50,11 +50,13 @@ class NER_Tagger:
  					tn += 1
  				else:
  					fp += 1
+ 					#print total, new, g[total][-1], g[total][-2]
  			else:
  				if new == gold:
  					tp += 1
  				else:
  					fn += 1
+ 					#print total, new, g[total][-1], g[total][-2], g[total][:-2]
  			total += 1
  		print tp, tn, fp, fn, total
  		return float(tp)/float(tp+fp),float(tp)/float(tp+fn)
@@ -179,6 +181,8 @@ def starts_with_punctuation(tweets):
 				entry.insert(0,"starts_with_punc")
 			elif word.find("http") > -1 or re.search(r"\.[a-z]{3}",word):
 				entry.insert(0,"starts_with_punc")
+			elif re.match("[0-9]+",word):
+				entry.insert(0,"is_number")
 			i+=1
 	return tweets
 
@@ -242,7 +246,7 @@ def brown2bits(bits):
 
 def read_clusters():
 	clusterdict = {}
-	with open('twitter_nlp/data/brown_clusters/60K_clusters.txt') as clusterfile:
+	with open('../twitter_nlp/data/brown_clusters/60K_clusters.txt') as clusterfile:
 		for line in clusterfile.readlines():
 			lineList = line.split()
 			clusterdict[lineList[0]] = brown2bits(lineList[1])
@@ -277,9 +281,10 @@ def cluster_features(tweets):
 					if nexttoken in clusterdict:
 						nextcluster = clusterdict[nexttoken]
 						tweet[i].insert(0, 'nextcluster'+nextcluster[:4])
+	return tweets
 
 def dictionary_features(tweets):
-	dict_main_path = 'twitter_nlp/data/dictionaries/'
+	dict_main_path = '../twitter_nlp/data/dictionaries/'
 	auto_make = read_dictionary(dict_main_path+'automotive.make')
 	auto_model = read_dictionary(dict_main_path+'automotive.model')
 	events = read_dictionary(dict_main_path+'base.events.festival_series')
