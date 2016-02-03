@@ -40,6 +40,7 @@ class NER_Tagger:
  		for tweet in test_tweets:
  			for entry in tweet:
  				test_words.append(entry[-2])
+ 			test_words.append('')
 
  		new_tags = []
  		for i in range(len(test_words)):
