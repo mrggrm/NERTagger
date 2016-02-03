@@ -93,6 +93,7 @@ class NER_Tagger:
 					if i < len(word)-1 or label:
 						fw.write(str(word[i])+" ")
 				fw.write("\n")
+			fw.write("\n")
 		fw.close()
 		return
 
