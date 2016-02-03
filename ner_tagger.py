@@ -113,6 +113,7 @@ class NER_Tagger:
 		tweets = cluster_features(tweets)
 		tweets = dictionary_features(tweets)
 		tweets = token_context(tweets)
+		tweets = pos_tags(tweets)
 
 		for tweet in tweets:
 			for word in tweet:
@@ -426,6 +427,31 @@ def token_context(tweets):
 				nextnext_token = tweet[i+2][-2]
 				tweet[i].insert(0, 'nextnext_token:'+nextnext_token)
 			#tweet[i].insert(0, 'token:'+tweet[i][-2])
+	return tweets
+
+def pos_tag(tweets):
+	#create input file
+	os.chdir('twitie-tagger')
+	with open('pos_input', 'w') as infile:
+		tokens = []
+		for tweet in tweets:
+			for entry in tweet:
+				tokens.append(entry[-2])
+		infile.write('\n'.join(tokens))
+	os.system('java -jar twitie_tag.jar models/gate-EN-twitter.model pos_input > pos_output')
+
+	with open('pos_output', 'r') as outfile:
+		pos_tags = []
+		for line in outfile.readlines():
+			pos_tags.append(line.split('_')[-1].strip())
+
+	word_ind = 0
+	for tweet in tweets:
+		for entry in tweet:
+			entry.insert(0, pos_tags[word_ind])
+			word_ind += 1
+	os.chdir('..')
+
 	return tweets			
 
 if __name__ == "__main__":
