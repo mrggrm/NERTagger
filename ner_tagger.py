@@ -28,7 +28,7 @@ class NER_Tagger:
  			"cc.mallet.fst.SimpleTagger " +\
  			"--model-file trained_model featurized_test > tagged_test" )
  		self.post_process("tagged_test", words)
- 		print self.get_precision_and_recall(words,"tagged_test_postprocessed")
+ 		#print self.get_precision_and_recall(words,"tagged_test_postprocessed")
  		#print self.get_precision_and_recall(words,"tagged_test")
 
 
@@ -40,6 +40,7 @@ class NER_Tagger:
  		for tweet in test_tweets:
  			for entry in tweet:
  				test_words.append(entry[-2])
+ 			test_words.append('')
 
  		new_tags = []
  		for i in range(len(test_words)):
@@ -119,6 +120,7 @@ class NER_Tagger:
 					if i < len(word)-1 or label:
 						fw.write(str(word[i])+" ")
 				fw.write("\n")
+			fw.write("\n")
 		fw.close()
 		return
 
