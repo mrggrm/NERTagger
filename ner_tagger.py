@@ -103,6 +103,7 @@ class NER_Tagger:
 		#names_dict is only retrieved once to increase efficiency
 		names_dict = self.read_names("census_first_names", {})
 		names_dict = self.read_names("census_last_names", names_dict)
+		cities_dict = self.read_cities("us_cities", {})
 
 		tweets = starts_with_punctuation(tweets)
 		tweets = is_word_shape_like_ne(tweets)
@@ -114,6 +115,7 @@ class NER_Tagger:
 		tweets = dictionary_features(tweets)
 		tweets = token_context(tweets)
 		tweets = pos_tag(tweets)
+		tweets = self.is_a_city(cities_dict, tweets)
 
 		for tweet in tweets:
 			for word in tweet:
@@ -199,6 +201,27 @@ class NER_Tagger:
 				if word_index != len(tweet)-1:
 					word.insert(0, "next_tag_"+str(tweet[word_index+1][-1]))
 		return tweets
+
+	def is_a_city(self, cities_dict, tweets):
+		"""
+			Checks for names in the tweets
+		"""
+		for tweet in tweets:
+			for word in tweet:
+				if word[-2].lower() in cities_dict:
+					word.insert(0, "is_city")
+		return tweets		
+
+	def read_cities(self, filename, cities_dict):
+		"""
+			Retrieves city names from list of cities in the US
+		"""
+		the_file = open(filename)
+		all_lines = the_file.readlines()
+		# hashing allows of O(1) checks. The 1 is meaningless
+		for line in all_lines:
+			cities_dict[line.lower()] = 1
+		return cities_dict
 
 
 def starts_with_punctuation(tweets):
