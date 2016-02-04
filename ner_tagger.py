@@ -233,6 +233,17 @@ class NER_Tagger:
 			cities_dict[line.lower()] = 1
 		return cities_dict
 
+	def read_cities(self, filename, cities_dict):
+		"""
+			Retrieves city names from list of cities in the US
+		"""
+		the_file = open(filename)
+		all_lines = the_file.readlines()
+		# hashing allows of O(1) checks. The 1 is meaningless
+		for line in all_lines:
+			cities_dict[line.lower()] = 1
+		return cities_dict
+
 
 	def starts_with_punctuation(self, tweets):
 		for tweet in tweets:
