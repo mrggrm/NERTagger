@@ -204,7 +204,7 @@ class NER_Tagger:
 
 	def is_a_city(self, cities_dict, tweets):
 		"""
-			Checks for names in the tweets
+			Checks for city names in the tweets
 		"""
 		for tweet in tweets:
 			for word in tweet:
