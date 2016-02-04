@@ -83,7 +83,7 @@ class NER_Tagger:
  					tp += 1
  				else:
  					fn += 1
- 					print total, new, g[total][-1], g[total][-2], g[total][:-2]
+ 					#print total, new, g[total][-1], g[total][-2], g[total][:-2]
  			total += 1
  		print tp, tn, fp, fn, total
  		p = float(tp)/float(tp+fp)
@@ -106,16 +106,21 @@ class NER_Tagger:
 		#names_dict is only retrieved once to increase efficiency
 		names_dict = self.read_names("census_first_names", {})
 		names_dict = self.read_names("census_last_names", names_dict)
+		cities_dict = self.read_cities("us_cities", {})
+		word_dict = set(lexicon.words())
 
-		#tweets = starts_with_punctuation(tweets)
-		tweets = is_word_shape_like_ne(tweets)
-		tweets = self.is_a_name(tweets, names_dict)
+		tweets = self.starts_with_punctuation(tweets)
+		tweets = self.is_word_shape_like_ne(tweets)
+		tweets = self.is_a_name(tweets, names_dict, word_dict)
 		tweets = self.whole_tweet_is_upper_lower(tweets)
 		tweets = self.word_begins_with_capital(tweets)
 		# tweets = self.prev_next_BIO_tag(tweets)
 		tweets = cluster_features(tweets)
 		tweets = dictionary_features(tweets)
 		tweets = token_context(tweets)
+		tweets = pos_tag(tweets)
+		tweets = self.is_a_city(cities_dict, tweets)
+		tweets = self.is_word_misspelled(tweets, word_dict)
 
 		for tweet in tweets:
 			for word in tweet:
@@ -127,14 +132,19 @@ class NER_Tagger:
 		fw.close()
 		return
 
-	def is_a_name(self, tweets, names_dict):
+	def is_a_name(self, tweets, names_dict, word_dict):
 		"""
 			Checks for names in the tweets
 		"""
+		print len(word_dict)
 		for tweet in tweets:
 			for word in tweet:
-				if word[-2].lower() in names_dict:
-					word.insert(0, "is_name")
+				entity = word[-2].lower()
+				if entity in names_dict:
+					if entity not in word_dict:
+						word.insert(0, "is_name")
+					else:
+						word.insert(0,"might_be_name") # Differentiate between words that are definitely names and not?
 				else:
 					word.insert(0, "is_not_a_name")
 		return tweets
@@ -202,66 +212,87 @@ class NER_Tagger:
 					word.insert(0, "next_tag_"+str(tweet[word_index+1][-1]))
 		return tweets
 
+	def is_a_city(self, cities_dict, tweets):
+		"""
+			Checks for city names in the tweets
+		"""
+		for tweet in tweets:
+			for word in tweet:
+				if word[-2].lower() in cities_dict:
+					word.insert(0, "is_city")
+		return tweets		
 
-def starts_with_punctuation(tweets):
-	for tweet in tweets:
-		i = 0
-		for entry in tweet:
-			word = entry[-2]
-			if word.startswith("@") or word.startswith("#") or len(word) < 2:
-				entry.insert(0,"starts_with_punc")
-			elif word.find("http") > -1 or re.search(r"\.[a-z]{3}",word):
-				entry.insert(0,"starts_with_punc")
-			elif re.match("[0-9]+",word):
-				entry.insert(0,"is_number")
-			i+=1
-	return tweets
-
-def is_word_shape_like_ne(tweets):
-	"""Adds a feature for whether the word shape is likely to be 
-	a named entity, checking that the previous word is not EOS,
-	and other punctuation"""
-	capsword = re.compile(r"[A-Z][a-z]+")
-	punc = re.compile(r"[.!?:]")
-	caps_non_entities = load_set_from_file("capitalized_non_entities.txt")
-	for tweet in tweets:
-		i = 0
-		for entry in tweet:
-			word = entry[-2]
-			if word.lower() in caps_non_entities:
-				pass
-			elif re.match(capsword,word) and i != 0 and not re.match(punc,tweet[i-1][-2]):
-					entry.insert(0,"is_caps")
-			i+=1
-	return tweets
-
-def is_word_misspelled(tweets):
-	"""Adds a feature for whether the word is likely to be a word that 
-	is commonly misspelled, so that we can differentiate words not in the dictionary
-	that might be proper nouns from misspellings"""
-	common_misspellings = load_set_from_file("common_spelling_errors.txt")
-	for tweet in tweets:
-		i = 0
-		for entry in tweet:
-			word = entry[-2].lower()
-			if word not in lexicon.words():
-				for cm in common_misspellings:
-					if editdistance.eval(word,cm) < 3: 
-						entry.insert(0,"is_misspelling")
-					else:
-						entry.insert(0,"misspelling_or_proper")
-			else:
-				entry.insert(0,"in_dictionary")
-			i+=1
-	return tweets
+	def read_cities(self, filename, cities_dict):
+		"""
+			Retrieves city names from list of cities in the US
+		"""
+		the_file = open(filename)
+		all_lines = the_file.readlines()
+		# hashing allows of O(1) checks. The 1 is meaningless
+		for line in all_lines:
+			cities_dict[line.lower()] = 1
+		return cities_dict
 
 
-def load_set_from_file(filename):
-	newset = set()
-	f = open(filename)
-	for line in f:
-		newset.add(line.strip().lower())
-	return newset
+	def starts_with_punctuation(self, tweets):
+		for tweet in tweets:
+			i = 0
+			for entry in tweet:
+				word = entry[-2]
+				if word.startswith("@") or word.startswith("#") or len(word) < 2:
+					entry.insert(0,"starts_with_punc")
+				elif word.find("http") > -1 or re.search(r"\.[a-z]{3}",word):
+					entry.insert(0,"starts_with_punc")
+				elif re.match("[0-9]+",word):
+					entry.insert(0,"is_number")
+				i+=1
+		return tweets
+
+	def is_word_shape_like_ne(self, tweets):
+		"""Adds a feature for whether the word shape is likely to be 
+		a named entity, checking that the previous word is not EOS,
+		and other punctuation"""
+		capsword = re.compile(r"[A-Z][a-z]+")
+		punc = re.compile(r"[.!?:]")
+		caps_non_entities = self.load_set_from_file("capitalized_non_entities.txt")
+		for tweet in tweets:
+			i = 0
+			for entry in tweet:
+				word = entry[-2]
+				if word.lower() in caps_non_entities:
+					entry.insert(0,"is_capitalized_not_ne")
+				elif re.match(capsword,word) and i != 0 and not re.match(punc,tweet[i-1][-2]):
+						entry.insert(0,"is_caps")
+				i+=1
+		return tweets
+
+	def is_word_misspelled(self, tweets, word_dict):
+		"""Adds a feature for whether the word is likely to be a word that 
+		is commonly misspelled, so that we can differentiate words not in the dictionary
+		that might be proper nouns from misspellings"""
+		common_misspellings = self.load_set_from_file("common_spelling_errors.txt")
+		for tweet in tweets:
+			i = 0
+			for entry in tweet:
+				word = entry[-2].lower()
+				if word not in word_dict:
+					for cm in common_misspellings:
+						if editdistance.eval(word,cm) < 3: 
+							entry.insert(0,"is_misspelling")
+						else:
+							entry.insert(0,"misspelling_or_proper")
+				else:
+					entry.insert(0,"in_dictionary")
+				i+=1
+		return tweets
+
+
+	def load_set_from_file(self, filename):
+		newset = set()
+		f = open(filename)
+		for line in f:
+			newset.add(line.strip().lower())
+		return newset
 
 
 def brown2bits(bits):
@@ -429,6 +460,31 @@ def token_context(tweets):
 				nextnext_token = tweet[i+2][-2]
 				tweet[i].insert(0, 'nextnext_token:'+nextnext_token)
 			#tweet[i].insert(0, 'token:'+tweet[i][-2])
+	return tweets
+
+def pos_tag(tweets):
+	#create input file
+	os.chdir('twitie-tagger')
+	with open('pos_input', 'w') as infile:
+		tokens = []
+		for tweet in tweets:
+			for entry in tweet:
+				tokens.append(entry[-2])
+		infile.write('\n'.join(tokens))
+	os.system('java -jar twitie_tag.jar models/gate-EN-twitter.model pos_input > pos_output')
+
+	with open('pos_output', 'r') as outfile:
+		pos_tags = []
+		for line in outfile.readlines():
+			pos_tags.append(line.split('_')[-1].strip())
+
+	word_ind = 0
+	for tweet in tweets:
+		for entry in tweet:
+			entry.insert(0, pos_tags[word_ind])
+			word_ind += 1
+	os.chdir('..')
+
 	return tweets			
 
 if __name__ == "__main__":
@@ -437,4 +493,4 @@ if __name__ == "__main__":
  	NT = NER_Tagger()
  	NT.train("./proj1-data/train.gold")
  	NT.test("./proj1-data/dev.gold")
- 	#NT.test("./proj1-data/test.gold")
+ 	NT.test("./proj1-data/test.gold")
