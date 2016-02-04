@@ -27,9 +27,9 @@ class NER_Tagger:
  			"\"../mallet-2.0.8RC3/class:../mallet-2.0.8RC3/lib/mallet-deps.jar\" " +\
  			"cc.mallet.fst.SimpleTagger " +\
  			"--model-file trained_model featurized_test > tagged_test" )
- 		self.post_process("tagged_test", words)
+ 		#self.post_process("tagged_test", words)
  		#print self.get_precision_and_recall(words,"tagged_test_postprocessed")
- 		#print self.get_precision_and_recall(words,"tagged_test")
+ 		print self.get_precision_and_recall(words,"tagged_test")
 
 
  	def post_process(self, tags_file, test_tweets):
@@ -83,10 +83,13 @@ class NER_Tagger:
  					tp += 1
  				else:
  					fn += 1
- 					#print total, new, g[total][-1], g[total][-2], g[total][:-2]
+ 					print total, new, g[total][-1], g[total][-2], g[total][:-2]
  			total += 1
  		print tp, tn, fp, fn, total
- 		return float(tp)/float(tp+fp),float(tp)/float(tp+fn)
+ 		p = float(tp)/float(tp+fp)
+ 		r = float(tp)/float(tp+fn)
+ 		f1 = 2*p*r/(p+r)
+ 		return p,r,f1
 
 
 	def featurize(self,tweets,output="featurized",label=True):
@@ -104,7 +107,7 @@ class NER_Tagger:
 		names_dict = self.read_names("census_first_names", {})
 		names_dict = self.read_names("census_last_names", names_dict)
 
-		tweets = starts_with_punctuation(tweets)
+		#tweets = starts_with_punctuation(tweets)
 		tweets = is_word_shape_like_ne(tweets)
 		tweets = self.is_a_name(tweets, names_dict)
 		tweets = self.whole_tweet_is_upper_lower(tweets)
@@ -434,3 +437,4 @@ if __name__ == "__main__":
  	NT = NER_Tagger()
  	NT.train("./proj1-data/train.gold")
  	NT.test("./proj1-data/dev.gold")
+ 	#NT.test("./proj1-data/test.gold")
