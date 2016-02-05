@@ -83,7 +83,7 @@ class NER_Tagger:
  					tp += 1
  				else:
  					fn += 1
- 					#print total, new, g[total][-1], g[total][-2], g[total][:-2]
+ 					print total, new, g[total][-1], g[total][-2]#, g[total][:-2]
  			total += 1
  		print tp, tn, fp, fn, total
  		p = float(tp)/float(tp+fp)
@@ -120,7 +120,7 @@ class NER_Tagger:
 		tweets = token_context(tweets)
 		tweets = pos_tag(tweets)
 		tweets = self.is_a_city(cities_dict, tweets)
-		tweets = self.is_word_misspelled(tweets, word_dict)
+		#tweets = self.is_word_misspelled(tweets, word_dict)
 
 		for tweet in tweets:
 			for word in tweet:
@@ -287,11 +287,14 @@ class NER_Tagger:
 			for entry in tweet:
 				word = entry[-2].lower()
 				if word not in word_dict:
+					not_misspelling = True
 					for cm in common_misspellings:
 						if editdistance.eval(word,cm) < 3: 
 							entry.insert(0,"is_misspelling")
-						else:
-							entry.insert(0,"misspelling_or_proper")
+							not_misspelling = False
+							break
+					if not_misspelling:
+						entry.insert(0,"misspelling_or_proper")
 				else:
 					entry.insert(0,"in_dictionary")
 				i+=1
