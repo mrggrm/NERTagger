@@ -494,8 +494,18 @@ def pos_tag(tweets):
 
 	word_ind = 0
 	for tweet in tweets:
-		for entry in tweet:
-			entry.insert(0, pos_tags[word_ind])
+		for i in range(len(tweet)):
+			tweet[i].insert(0, 'curr_pos'+pos_tags[word_ind])
+			if i != 0:
+				tweet[i].insert(0, 'prev_pos:'+pos_tags[word_ind-1])
+			if i > 1:
+				tweet[i].insert(0, 'prevprev_pos:'+pos_tags[word_ind-2])
+
+			if i != (len(tweet)-1):
+				tweet[i].insert(0, 'next_pos:'+pos_tags[word_ind+1])
+
+			# if i < (len(tweet)-2):
+			# 	tweet[i].insert(0, 'nextnext_pos:'+pos_tags[word_ind+2])
 			word_ind += 1
 	os.chdir('..')
 
